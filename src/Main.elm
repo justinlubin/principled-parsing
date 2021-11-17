@@ -194,6 +194,10 @@ shapeRepair : List Token -> List Token
 shapeRepair =
   innerShapeRepair >> outerShapeRepair
 
+balanceRepair : List Token -> List (List Token)
+balanceRepair toks =
+  [toks, toks]
+
 -- Model
 
 type alias Model =
@@ -229,6 +233,30 @@ viewSide s =
     Right ->
       H.span [ HA.class "right" ] []
 
+tokenClass : Token -> String
+tokenClass tok =
+  case tok of
+    LPAREN ->
+      "paren"
+
+    RPAREN ->
+      "paren"
+
+    VAR _ ->
+      "var"
+
+    NUM _ ->
+      "num"
+
+    PLUS ->
+      "op"
+
+    OPERAND_HOLE ->
+      "hole"
+
+    OPERATOR_HOLE ->
+      "hole"
+
 viewToken : Token -> Html Msg
 viewToken tok =
   let
@@ -236,7 +264,8 @@ viewToken tok =
       shape tok
   in
   H.span
-    [ HA.class "tile" ]
+    [ HA.class "tile"
+    , HA.class (tokenClass tok)]
     [ viewSide left
     , H.span [ HA.class "contents" ] [ H.text (contents tok) ]
     , viewSide right
@@ -250,10 +279,22 @@ view model =
 
     shapeRepairedTokens =
       shapeRepair tokens
+
+    possibleBalanceRepairedTokens =
+      balanceRepair shapeRepairedTokens
   in
   H.div
     []
     [ H.h2
+        []
+        [ H.text "Input" ]
+    , H.input
+        [ HA.class "main-input"
+        , HA.type_ "text"
+        , HE.onInput InputChanged
+        ]
+        []
+    , H.h2
         []
         [ H.text "Tokens" ]
     , H.div
@@ -269,13 +310,17 @@ view model =
         )
     , H.h2
         []
-        [ H.text "Input" ]
-    , H.input
-        [ HA.class "main-input"
-        , HA.type_ "text"
-        , HE.onInput InputChanged
-        ]
+        [ H.text "Balance-repaired possibilities" ]
+    , H.div
         []
+        ( List.map
+            ( \toks ->
+                H.div
+                  [ HA.class "tiles" ]
+                  (List.map viewToken toks)
+            )
+            possibleBalanceRepairedTokens
+        )
     ]
 
 -- Main

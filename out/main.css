@@ -1,5 +1,5 @@
 :root {
-  --tile-color: #AAAAAA;
+  --tile-color: #000000;
   --tile-size: 40px;
 }
 
@@ -52,3 +52,9 @@
 
   text-align: center;
 }
+
+.paren { --tile-color: #AAAAFF; }
+.num   { --tile-color: #AAFFAA; }
+.var   { --tile-color: #AAFFAA; }
+.op    { --tile-color: #FFFFAA; }
+.hole  { --tile-color: #FFAAAA; }
