@@ -1,0 +1,54 @@
+:root {
+  --tile-color: #AAAAAA;
+  --tile-size: 40px;
+}
+
+/* Tiles */
+
+.tiles {
+}
+
+.tile {
+  display: inline-flex;
+  font-family: monospace;
+  font-size: 1.5em;
+  margin: 0 -3px;
+}
+
+.tile .left,
+.tile .right {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-top: calc(var(--tile-size) / 2) solid transparent;
+  border-bottom: calc(var(--tile-size) / 2) solid transparent;
+}
+
+.tile .left {
+  border-right: calc(var(--tile-size) / 4) solid var(--tile-color);
+}
+
+.tile .left:nth-child(3) {
+  border-color: var(--tile-color);
+  border-right-color: transparent;
+}
+
+.tile .right {
+  border-left: calc(var(--tile-size) / 4) solid var(--tile-color);
+}
+
+.tile .right:nth-child(1) {
+  border-color: var(--tile-color);
+  border-left-color: transparent;
+}
+
+.tile .contents {
+  display: inline-block;
+  background-color: var(--tile-color);
+
+  width: calc(var(--tile-size) / 2);
+  height: var(--tile-size);
+  line-height: var(--tile-size);
+
+  text-align: center;
+}
