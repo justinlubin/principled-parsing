@@ -22,6 +22,15 @@ type Side
   = Left
   | Right
 
+invert : Side -> Side
+invert s =
+  case s of
+    Left ->
+      Right
+
+    Right ->
+      Left
+
 type alias Shape =
   (Side, Side)
 
@@ -111,6 +120,80 @@ tokenize =
   in
   String.toList >> helper []
 
+fits : Shape -> Shape -> Bool
+fits (_, firstRight) (secondLeft, _) =
+  firstRight /= secondLeft
+
+glue : Token -> Token -> List Token
+glue tok1 tok2 =
+  case (Tuple.second (shape tok1), Tuple.first (shape tok2)) of
+    (Left, Left) ->
+      []
+
+    (Right, Right) ->
+      []
+
+    (Left, Right) ->
+      [OPERAND_HOLE]
+
+    (Right, Left) ->
+      [OPERATOR_HOLE]
+
+innerShapeRepair : List Token -> List Token
+innerShapeRepair toks =
+  case toks of
+    first :: second :: rest ->
+      let
+        (_, firstRight) =
+          shape first
+
+        (secondLeft, _) =
+          shape second
+      in
+      first
+        :: glue first second
+        ++ innerShapeRepair (second :: rest)
+
+    _ ->
+      toks
+
+outerShapeRepair : List Token -> List Token
+outerShapeRepair toks =
+  case toks of
+    [] ->
+      []
+
+    head :: tail ->
+      let
+        prefix =
+          case Tuple.first (shape head) of
+            Left ->
+              []
+
+            Right ->
+              [OPERAND_HOLE]
+
+        suffix =
+          case
+            tail
+              |> List.reverse
+              |> List.head
+              |> Maybe.withDefault head
+              |> shape
+              |> Tuple.second
+          of
+            Left ->
+              [OPERAND_HOLE]
+
+            Right ->
+              []
+      in
+      prefix ++ toks ++ suffix
+
+shapeRepair : List Token -> List Token
+shapeRepair =
+  innerShapeRepair >> outerShapeRepair
+
 -- Model
 
 type alias Model =
@@ -161,14 +244,32 @@ viewToken tok =
 
 view : Model -> Html Msg
 view model =
+  let
+    tokens =
+      tokenize model.input
+
+    shapeRepairedTokens =
+      shapeRepair tokens
+  in
   H.div
     []
-    [ H.div
+    [ H.h2
+        []
+        [ H.text "Tokens" ]
+    , H.div
         [ HA.class "tiles" ]
-        ( model.input
-            |> tokenize
-            |> List.map viewToken
+        ( List.map viewToken tokens
         )
+    , H.h2
+        []
+        [ H.text "Shape-repaired tokens" ]
+    , H.div
+        [ HA.class "tiles" ]
+        ( List.map viewToken shapeRepairedTokens
+        )
+    , H.h2
+        []
+        [ H.text "Input" ]
     , H.input
         [ HA.class "main-input"
         , HA.type_ "text"
