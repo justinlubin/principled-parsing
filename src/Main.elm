@@ -115,6 +115,24 @@ type Side
   = Left
   | Right
 
+toTokens : Exp -> List Token
+toTokens e =
+  case e of
+    Var x ->
+      [VAR x]
+
+    Num n ->
+      [NUM n]
+
+    Plus e1 e2 ->
+      [LPAREN] ++ toTokens e1 ++ [PLUS] ++ toTokens e2 ++ [RPAREN]
+
+    OperandHole ->
+      [OPERAND_HOLE]
+
+    OperatorHole e1 e2 ->
+      [LPAREN] ++ toTokens e1 ++ [OPERATOR_HOLE] ++ toTokens e2 ++ [RPAREN]
+
 invert : Side -> Side
 invert s =
   case s of
@@ -286,6 +304,38 @@ shapeRepair =
 fits : Token -> Token -> Bool
 fits tok1 tok2 =
   Tuple.second (shape tok1) == Tuple.first (shape tok2)
+
+innerShapeChecks : List Token -> Bool
+innerShapeChecks toks =
+  case toks of
+    [] ->
+      True
+
+    [_] ->
+      True
+
+    first :: second :: rest ->
+      fits first second && innerShapeChecks (second :: rest)
+
+outerShapeChecks : List Token -> Bool
+outerShapeChecks toks =
+  case toks of
+    [] ->
+      True
+
+    head :: tail ->
+      let
+        last =
+          tail
+            |> List.reverse
+            |> List.head
+            |> Maybe.withDefault head
+      in
+      Tuple.first (shape head) == Left && Tuple.second (shape last) == Right
+
+shapeChecks : List Token -> Bool
+shapeChecks toks =
+  innerShapeChecks toks && outerShapeChecks toks
 
 deduplicate : List a -> List a
 deduplicate xs =
