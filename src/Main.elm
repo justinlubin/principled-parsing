@@ -47,6 +47,7 @@ mergeTree t1 t2 =
     _ ->
       [t1, t2]
 
+-- TODO: definitely not correct! consider a+b merged with c+d
 merge : VSA -> VSA -> VSA
 merge vts1 vts2 =
   List.concatMap
