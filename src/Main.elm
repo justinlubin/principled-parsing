@@ -12,6 +12,95 @@ type Exp
   | OperandHole
   | OperatorHole Exp Exp
 
+type alias VSA =
+  List VSATree
+
+type VSATree
+  = VVar (List String)
+  | VNum (List Int)
+  | VPlus VSA VSA
+  | VOperandHole
+  | VOperatorHole VSA VSA
+
+emptyVsa : VSA
+emptyVsa =
+  []
+
+mergeTree : VSATree -> VSATree -> VSA
+mergeTree t1 t2 =
+  case (t1, t2) of
+    (VVar xs1, VVar xs2) ->
+      [VVar (deduplicate (xs1 ++ xs2))]
+
+    (VNum ns1, VNum ns2) ->
+      [VNum (deduplicate (ns1 ++ ns2))]
+
+    (VPlus vsa11 vsa12, VPlus vsa21 vsa22) ->
+      [VPlus (merge vsa11 vsa21) (merge vsa12 vsa22)]
+
+    (VOperandHole, VOperandHole) ->
+      [VOperandHole]
+
+    (VOperatorHole vsa11 vsa12, VOperatorHole vsa21 vsa22) ->
+      [VOperatorHole (merge vsa11 vsa21) (merge vsa12 vsa22)]
+
+    _ ->
+      [t1, t2]
+
+merge : VSA -> VSA -> VSA
+merge vts1 vts2 =
+  List.concatMap
+    (\vt1 -> List.concatMap (mergeTree vt1) vts2)
+    vts1
+
+toVsa : Exp -> VSA
+toVsa e =
+  case e of
+    Var x ->
+      [VVar [x]]
+
+    Num n ->
+      [VNum [n]]
+
+    Plus e1 e2 ->
+      [VPlus (toVsa e1) (toVsa e2)]
+
+    OperandHole ->
+      [VOperandHole]
+
+    OperatorHole e1 e2 ->
+      [VOperatorHole (toVsa e1) (toVsa e2)]
+
+vsaTreeDebugString : VSATree -> String
+vsaTreeDebugString vsaTree =
+  case vsaTree of
+    VVar xs ->
+      String.join ", " xs
+
+    VNum ns ->
+      String.join ", " (List.map String.fromInt ns)
+
+    VPlus vsa1 vsa2 ->
+      "(+ "
+        ++ vsaDebugString vsa1
+        ++ " "
+        ++ vsaDebugString vsa2
+        ++ ")"
+
+    VOperandHole ->
+      "?"
+
+    VOperatorHole vsa1 vsa2 ->
+      "(?op "
+        ++ vsaDebugString vsa1
+        ++ " "
+        ++ vsaDebugString vsa2
+        ++ ")"
+
+vsaDebugString : VSA -> String
+vsaDebugString vsa =
+  "{" ++ String.join ", " (List.map vsaTreeDebugString vsa) ++ "}"
+
 type Token
   = LPAREN
   | RPAREN
@@ -381,6 +470,18 @@ viewToken tok =
     , viewSide right
     ]
 
+sequenceMaybe : List (Maybe a) -> Maybe (List a)
+sequenceMaybe xs =
+  case xs of
+    [] ->
+      Just []
+
+    Just x :: tail ->
+      Maybe.map ((::) x) (sequenceMaybe tail)
+
+    Nothing :: tail ->
+      Nothing
+
 view : Model -> Html Msg
 view model =
   let
@@ -392,6 +493,11 @@ view model =
 
     possibleBalanceRepairedTokens =
       balanceRepair shapeRepairedTokens
+
+    maybePossibleTrees =
+      possibleBalanceRepairedTokens
+        |> List.map parse
+        |> sequenceMaybe
   in
   H.div
     []
@@ -442,6 +548,25 @@ view model =
             )
             possibleBalanceRepairedTokens
         )
+    , H.h2
+        []
+        [ H.text "Version space algebra" ]
+    , H.div
+        []
+        [ case maybePossibleTrees of
+            Just [] ->
+              H.text "No possible trees!"
+
+            Just (head :: tail) ->
+              H.text <| vsaDebugString <|
+                List.foldl
+                  (\e -> merge (toVsa e))
+                  (toVsa head)
+                  tail
+
+            Nothing ->
+              H.text "A possible list of tokens failed to parse!"
+        ]
     ]
 
 consume : Token -> List Token -> Maybe (List Token)
