@@ -194,6 +194,15 @@ fits : Token -> Token -> Bool
 fits tok1 tok2 =
   Tuple.second (shape tok1) == Tuple.first (shape tok2)
 
+deduplicate : List a -> List a
+deduplicate xs =
+  case xs of
+    [] ->
+      []
+
+    head :: tail ->
+      head :: deduplicate (List.filter ((/=) head) tail)
+
 wellShapedInsertions : Token -> List Token -> List (List Token)
 wellShapedInsertions tok toks =
   case toks of
@@ -269,13 +278,33 @@ forwardRepair left right depth toks =
 balanceRepair : List Token -> List (List Token)
 balanceRepair =
   forwardRepair LPAREN RPAREN 0
-  {-
     >> List.concatMap
-         ( List.reverse
-             >> forwardRepair RPAREN LPAREN
-             >> List.map List.reverse
+         ( reverseTokens
+             >> forwardRepair LPAREN RPAREN 0
+             >> List.map reverseTokens
          )
-  -}
+    >> deduplicate
+
+reverseToken : Token -> Token
+reverseToken tok =
+  case tok of
+    LPAREN ->
+      RPAREN
+
+    RPAREN ->
+      LPAREN
+
+    _ ->
+      tok
+
+reverseTokens : List Token -> List Token
+reverseTokens toks =
+  case toks of
+    [] ->
+      []
+
+    head :: tail ->
+      reverseTokens tail ++ [reverseToken head]
 
 -- Model
 
