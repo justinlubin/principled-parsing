@@ -349,13 +349,11 @@ forwardRepair left right depth toks =
         newDepth =
           if head == left then
             depth + 1
-          else if head == right then
-            depth - 1
           else
             depth
 
         partiallyRepairedTails =
-          if checkForwardBalanced left right newDepth tail then
+          if head /= left || checkForwardBalanced left right newDepth tail then
             [tail]
           else
             wellShapedInsertions right tail
@@ -370,11 +368,11 @@ forwardRepair left right depth toks =
 balanceRepair : List Token -> List (List Token)
 balanceRepair =
   forwardRepair LPAREN RPAREN 0
-    >> List.concatMap
+    {- >> List.concatMap
          ( reverseTokens
              >> forwardRepair LPAREN RPAREN 0
              >> List.map reverseTokens
-         )
+             ) -}
     >> deduplicate
 
 reverseToken : Token -> Token
@@ -407,7 +405,7 @@ type alias Model =
 init : Model
 init =
   { input =
-      "1 + (2 + 3)"
+      "(1) + ("
   }
 
 -- Update
