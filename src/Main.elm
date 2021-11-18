@@ -7,7 +7,10 @@ import Html.Events as HE
 
 type Exp
   = Var String
+  | Num Int
   | Plus Exp Exp
+  | OperandHole
+  | OperatorHole Exp Exp
 
 type Token
   = LPAREN
@@ -423,12 +426,101 @@ view model =
         ( List.map
             ( \toks ->
                 H.div
-                  [ HA.class "tiles" ]
-                  (List.map viewToken toks)
+                  []
+                  [ H.text <|
+                      case parse toks of
+                        Just e ->
+                          expDebugString e
+
+                        Nothing ->
+                          "Did not parse!"
+                  , H.div
+                      [ HA.class "tiles" ]
+                      (List.map viewToken toks)
+                  , H.br [] []
+                  ]
             )
             possibleBalanceRepairedTokens
         )
     ]
+
+consume : Token -> List Token -> Maybe (List Token)
+consume tok toks =
+  case toks of
+    [] ->
+      Nothing
+
+    head :: tail ->
+      if head == tok then
+        Just tail
+      else
+        Nothing
+
+parseBase : List Token -> Maybe (Exp, List Token)
+parseBase toks =
+  case toks of
+    LPAREN :: toks2 ->
+      parseTerm toks2 |> Maybe.andThen (\(e, toks3) ->
+      consume RPAREN toks3 |> Maybe.map (\toks4 ->
+        (e, toks4)
+      ))
+
+    NUM n :: toks2 ->
+      Just (Num n, toks2)
+
+    VAR x :: toks2 ->
+      Just (Var x, toks2)
+
+    OPERAND_HOLE :: toks2 ->
+      Just (OperandHole, toks2)
+
+    _ ->
+      Nothing
+
+parseTerm : List Token -> Maybe (Exp, List Token)
+parseTerm toks =
+  parseBase toks |> Maybe.andThen (\(left, toks2) ->
+    case toks2 of
+      PLUS :: toks3 ->
+        parseTerm toks3 |> Maybe.map (\(right, toks4) ->
+          (Plus left right, toks4)
+        )
+
+      OPERATOR_HOLE :: toks3 ->
+        parseTerm toks3 |> Maybe.map (\(right, toks4) ->
+          (OperatorHole left right, toks4)
+        )
+
+      _ ->
+        Just (left, toks2)
+  )
+
+parse : List Token -> Maybe Exp
+parse toks =
+  case parseTerm toks of
+    Just (e, []) ->
+      Just e
+
+    _ ->
+      Nothing
+
+expDebugString : Exp -> String
+expDebugString e =
+  case e of
+    Var x ->
+      "x"
+
+    Num n ->
+      String.fromInt n
+
+    Plus e1 e2 ->
+      "(+ " ++ expDebugString e1 ++ " " ++ expDebugString e2 ++ ")"
+
+    OperandHole ->
+      "?"
+
+    OperatorHole e1 e2 ->
+      "(?op " ++ expDebugString e1 ++ " " ++ expDebugString e2 ++ ")"
 
 -- Main
 
@@ -439,4 +531,3 @@ main =
     , update = update
     , view = view
     }
-
