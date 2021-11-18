@@ -632,7 +632,7 @@ expDebugString : Exp -> String
 expDebugString e =
   case e of
     Var x ->
-      "x"
+      x
 
     Num n ->
       String.fromInt n
