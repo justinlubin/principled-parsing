@@ -120,10 +120,6 @@ tokenize =
   in
   String.toList >> helper []
 
-fits : Shape -> Shape -> Bool
-fits (_, firstRight) (secondLeft, _) =
-  firstRight /= secondLeft
-
 glue : Token -> Token -> List Token
 glue tok1 tok2 =
   case (Tuple.second (shape tok1), Tuple.first (shape tok2)) of
@@ -194,9 +190,92 @@ shapeRepair : List Token -> List Token
 shapeRepair =
   innerShapeRepair >> outerShapeRepair
 
+fits : Token -> Token -> Bool
+fits tok1 tok2 =
+  Tuple.second (shape tok1) == Tuple.first (shape tok2)
+
+wellShapedInsertions : Token -> List Token -> List (List Token)
+wellShapedInsertions tok toks =
+  case toks of
+    [] ->
+      [[tok]]
+
+    [head] ->
+      if fits head tok then
+        [[head, tok]]
+      else
+        [[head]]
+
+    first :: second :: rest ->
+      let
+        extra =
+          if fits first tok && fits tok second && second /= tok then
+            [first :: tok :: second :: rest]
+          else
+            []
+      in
+        extra
+          ++ List.map
+               ((::) first)
+               (wellShapedInsertions tok (second :: rest))
+
+checkForwardBalanced : Token -> Token -> Int -> List Token -> Bool
+checkForwardBalanced left right depth toks =
+  case toks of
+    [] ->
+      depth <= 0
+
+    head :: tail ->
+      let
+        newDepth =
+          if head == left then
+            depth + 1
+          else if head == right then
+            depth - 1
+          else
+            depth
+      in
+      checkForwardBalanced left right newDepth tail
+
+forwardRepair : Token -> Token -> Int -> List Token -> List (List Token)
+forwardRepair left right depth toks =
+  case toks of
+    [] ->
+      [[]]
+
+    head :: tail ->
+      let
+        newDepth =
+          if head == left then
+            depth + 1
+          else if head == right then
+            depth - 1
+          else
+            depth
+
+        partiallyRepairedTails =
+          if checkForwardBalanced left right newDepth tail then
+            [tail]
+          else
+            wellShapedInsertions right tail
+      in
+      List.map
+        ((::) head)
+        ( List.concatMap
+            (forwardRepair left right newDepth)
+            partiallyRepairedTails
+        )
+
 balanceRepair : List Token -> List (List Token)
-balanceRepair toks =
-  [toks, toks]
+balanceRepair =
+  forwardRepair LPAREN RPAREN 0
+  {-
+    >> List.concatMap
+         ( List.reverse
+             >> forwardRepair RPAREN LPAREN
+             >> List.map List.reverse
+         )
+  -}
 
 -- Model
 
@@ -209,7 +288,6 @@ init =
   { input =
       "1 + (2 + 3)"
   }
-
 
 -- Update
 
