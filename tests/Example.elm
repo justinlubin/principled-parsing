@@ -43,5 +43,14 @@ suite =
         toks
           |> shapeRepair
           |> shapeChecks
-          |> Expect.true "Expected the repaired tokens to shape-check"
+          |> Expect.true "Expected the shape-repaired tokens to shape-check"
+    , fuzz (list token) "balanceRepair repairs" <| \toks ->
+      if List.length toks > 10 then
+        Expect.pass
+      else
+        toks
+          |> shapeRepair
+          |> balanceRepair
+          |> List.all balanceChecks
+          |> Expect.true "Expected all balance-repaired tokens to be balanced"
     ]

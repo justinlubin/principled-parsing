@@ -337,6 +337,26 @@ shapeChecks : List Token -> Bool
 shapeChecks toks =
   innerShapeChecks toks && outerShapeChecks toks
 
+balanceChecks : List Token -> Bool
+balanceChecks =
+  let
+    helper : Int -> List Token -> Bool
+    helper depth toks =
+      case toks of
+        [] ->
+          depth == 0
+
+        LPAREN :: tail ->
+          helper (depth + 1) tail
+
+        RPAREN :: tail ->
+          helper (depth - 1) tail
+
+        _ :: tail ->
+          helper depth tail
+  in
+  helper 0
+
 deduplicate : List a -> List a
 deduplicate xs =
   case xs of
