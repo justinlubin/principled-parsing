@@ -3,7 +3,7 @@ module MoreFuzz exposing
   , exp
   )
 
-import Main exposing (..)
+import Lang exposing (..)
 import Fuzz exposing (..)
 
 token : Fuzzer Token
