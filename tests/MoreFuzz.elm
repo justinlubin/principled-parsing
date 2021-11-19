@@ -3,8 +3,10 @@ module MoreFuzz exposing
   , exp
   )
 
-import Lang exposing (..)
 import Fuzz exposing (..)
+
+import Token exposing (Token(..))
+import Exp exposing (Exp(..))
 
 token : Fuzzer Token
 token =

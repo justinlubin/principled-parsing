@@ -1,11 +1,21 @@
 module Token exposing
-  ( contents
+  ( Token(..)
+  , contents
   , shape
   , reverseMany
   , fits
   )
 
-import Lang exposing (..)
+import Shape exposing (Shape, Side(..))
+
+type Token
+  = LPAREN
+  | RPAREN
+  | VAR String
+  | NUM Int
+  | PLUS
+  | OPERAND_HOLE
+  | OPERATOR_HOLE
 
 contents : Token -> String
 contents tok =

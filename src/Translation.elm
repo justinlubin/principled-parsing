@@ -3,7 +3,8 @@ module Translation exposing
   , parse
   )
 
-import Lang exposing (..)
+import Token exposing (Token(..))
+import Exp exposing (Exp(..))
 
 tokenize : String -> List Token
 tokenize =

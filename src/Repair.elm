@@ -3,8 +3,9 @@ module Repair exposing
   , balance
   )
 
-import Lang exposing (..)
-import Token
+import Shape exposing (Side(..))
+import Token exposing (Token(..))
+import Exp exposing (Exp(..))
 
 import Utils
 

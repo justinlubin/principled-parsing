@@ -3,11 +3,12 @@ module Check exposing
   , balance
   )
 
-import Lang exposing (..)
-import Token
+import Shape
+import Token exposing (Token(..))
+import Exp exposing (Exp(..))
 
-innerShapeChecks : List Token -> Bool
-innerShapeChecks toks =
+innerShape : List Token -> Bool
+innerShape toks =
   case toks of
     [] ->
       True
@@ -16,10 +17,10 @@ innerShapeChecks toks =
       True
 
     first :: second :: rest ->
-      Token.fits first second && innerShapeChecks (second :: rest)
+      Token.fits first second && innerShape (second :: rest)
 
-outerShapeChecks : List Token -> Bool
-outerShapeChecks toks =
+outerShape : List Token -> Bool
+outerShape toks =
   case toks of
     [] ->
       True
@@ -32,12 +33,12 @@ outerShapeChecks toks =
             |> List.head
             |> Maybe.withDefault head
       in
-      Tuple.first (Token.shape head) == Left
-        && Tuple.second (Token.shape last) == Right
+      Tuple.first (Token.shape head) == Shape.Left
+        && Tuple.second (Token.shape last) == Shape.Right
 
 shape : List Token -> Bool
 shape toks =
-  innerShapeChecks toks && outerShapeChecks toks
+  innerShape toks && outerShape toks
 
 balance : List Token -> Bool
 balance =

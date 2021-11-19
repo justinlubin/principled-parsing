@@ -6,11 +6,12 @@ import Html as H exposing (Html)
 import Html.Attributes as HA
 import Html.Events as HE
 
-import Lang exposing (..)
-import Token
+import Shape exposing (Shape, Side)
+import Token exposing (Token(..))
+import Exp exposing (Exp(..))
 import Translation
 import Repair
-import VersionSpaceAlgebra as VSA
+import Vsa
 
 import Model exposing (Model)
 import Update exposing (Msg(..))
@@ -18,10 +19,10 @@ import Update exposing (Msg(..))
 viewSide : Side -> Html Msg
 viewSide s =
   case s of
-    Left ->
+    Shape.Left ->
       H.span [ HA.class "left" ] []
 
-    Right ->
+    Shape.Right ->
       H.span [ HA.class "right" ] []
 
 tokenClass : Token -> String
@@ -150,10 +151,10 @@ view model =
               H.text "No possible trees!"
 
             Just (head :: tail) ->
-              H.text <| VSA.debugString <|
+              H.text <| Vsa.debugString <|
                 List.foldl
-                  (\e -> VSA.merge (VSA.fromExp e))
-                  (VSA.fromExp head)
+                  (\e -> Vsa.merge (Vsa.fromExp e))
+                  (Vsa.fromExp head)
                   tail
 
             Nothing ->

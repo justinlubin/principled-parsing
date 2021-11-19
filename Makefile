@@ -3,3 +3,6 @@ build:
 
 test:
 	elm-test
+
+test-watch:
+	elm-test --watch

@@ -1,8 +1,16 @@
 module Exp exposing
-  ( tokens
+  ( Exp(..)
+  , tokens
   )
 
-import Lang exposing (..)
+import Token exposing (Token(..))
+
+type Exp
+  = Var String
+  | Num Int
+  | Plus Exp Exp
+  | OperandHole
+  | OperatorHole Exp Exp
 
 tokens : Exp -> List Token
 tokens e =
