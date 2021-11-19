@@ -2,9 +2,9 @@ module View exposing
   ( view
   )
 
-import Html as H exposing (Html)
-import Html.Attributes as HA
-import Html.Events as HE
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
 
 import Shape exposing (Shape, Side)
 import Token exposing (Token(..))
@@ -20,10 +20,10 @@ viewSide : Side -> Html Msg
 viewSide s =
   case s of
     Shape.Left ->
-      H.span [ HA.class "left" ] []
+      span [ class "left" ] []
 
     Shape.Right ->
-      H.span [ HA.class "right" ] []
+      span [ class "right" ] []
 
 tokenClass : Token -> String
 tokenClass tok =
@@ -55,11 +55,11 @@ viewToken tok =
     (left, right) =
       Token.shape tok
   in
-  H.span
-    [ HA.class "tile"
-    , HA.class (tokenClass tok)]
+  span
+    [ class "tile"
+    , class (tokenClass tok)]
     [ viewSide left
-    , H.span [ HA.class "contents" ] [ H.text (Token.contents tok) ]
+    , span [ class "contents" ] [ text (Token.contents tok) ]
     , viewSide right
     ]
 
@@ -92,73 +92,73 @@ view model =
         |> List.map Translation.parse
         |> sequenceMaybe
   in
-  H.div
+  div
     []
-    [ H.h2
+    [ h2
         []
-        [ H.text "Input" ]
-    , H.input
-        [ HA.class "main-input"
-        , HA.type_ "text"
-        , HE.onInput InputChanged
+        [ text "Input" ]
+    , input
+        [ class "main-input"
+        , type_ "text"
+        , onInput InputChanged
         ]
         []
-    , H.h2
+    , h2
         []
-        [ H.text "Tokens" ]
-    , H.div
-        [ HA.class "tiles" ]
+        [ text "Tokens" ]
+    , div
+        [ class "tiles" ]
         ( List.map viewToken tokens
         )
-    , H.h2
+    , h2
         []
-        [ H.text "Shape-repaired tokens" ]
-    , H.div
-        [ HA.class "tiles" ]
+        [ text "Shape-repaired tokens" ]
+    , div
+        [ class "tiles" ]
         ( List.map viewToken shapeRepairedTokens
         )
-    , H.h2
+    , h2
         []
-        [ H.text "Balance-repaired possibilities" ]
-    , H.div
+        [ text "Balance-repaired possibilities" ]
+    , div
         []
         ( List.map
             ( \toks ->
-                H.div
+                div
                   []
-                  [ H.text <|
+                  [ text <|
                       case Translation.parse toks of
                         Just e ->
                           expDebugString e
 
                         Nothing ->
                           "Did not parse!"
-                  , H.div
-                      [ HA.class "tiles" ]
+                  , div
+                      [ class "tiles" ]
                       (List.map viewToken toks)
-                  , H.br [] []
+                  , br [] []
                   ]
             )
             possibleBalanceRepairedTokens
         )
-    , H.h2
+    , h2
         []
-        [ H.text "Version space algebra" ]
-    , H.div
+        [ text "Version space algebra" ]
+    , div
         []
         [ case maybePossibleTrees of
             Just [] ->
-              H.text "No possible trees!"
+              text "No possible trees!"
 
             Just (head :: tail) ->
-              H.text <| Vsa.debugString <|
+              text <| Vsa.debugString <|
                 List.foldl
                   (\e -> Vsa.merge (Vsa.fromExp e))
                   (Vsa.fromExp head)
                   tail
 
             Nothing ->
-              H.text "A possible list of tokens failed to parse!"
+              text "A possible list of tokens failed to parse!"
         ]
     ]
 
