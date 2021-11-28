@@ -9,6 +9,9 @@ import Exp exposing (Exp(..))
 
 import Utils
 
+--------------------------------------------------------------------------------
+-- Shape repair
+
 glue : Token -> Token -> List Token
 glue tok1 tok2 =
   case (Tuple.second (Token.shape tok1), Tuple.first (Token.shape tok2)) of
@@ -28,13 +31,6 @@ innerShapeRepair : List Token -> List Token
 innerShapeRepair toks =
   case toks of
     first :: second :: rest ->
-      let
-        (_, firstRight) =
-          Token.shape first
-
-        (secondLeft, _) =
-          Token.shape second
-      in
       first
         :: glue first second
         ++ innerShapeRepair (second :: rest)
@@ -44,14 +40,14 @@ innerShapeRepair toks =
 
 outerShapeRepair : List Token -> List Token
 outerShapeRepair toks =
-  case toks of
-    [] ->
+  case Utils.shell toks of
+    Nothing ->
       []
 
-    head :: tail ->
+    Just (first, last) ->
       let
         prefix =
-          case Tuple.first (Token.shape head) of
+          case Tuple.first (Token.shape first) of
             Left ->
               []
 
@@ -59,14 +55,7 @@ outerShapeRepair toks =
               [OPERAND_HOLE]
 
         suffix =
-          case
-            tail
-              |> List.reverse
-              |> List.head
-              |> Maybe.withDefault head
-              |> Token.shape
-              |> Tuple.second
-          of
+          case Tuple.second (Token.shape last) of
             Left ->
               [OPERAND_HOLE]
 
@@ -79,11 +68,14 @@ shape : List Token -> List Token
 shape =
   innerShapeRepair >> outerShapeRepair
 
-wellShapedInsertions : Token -> List Token -> List (List Token)
-wellShapedInsertions tok toks =
+--------------------------------------------------------------------------------
+-- Balance repair
+
+wellShapedRightInsertions : Token -> List Token -> List (List Token)
+wellShapedRightInsertions tok toks =
   case toks of
     [] ->
-      [[tok]]
+      [[]]
 
     [head] ->
       if Token.fits head tok then
@@ -102,7 +94,7 @@ wellShapedInsertions tok toks =
         extra
           ++ List.map
                ((::) first)
-               (wellShapedInsertions tok (second :: rest))
+               (wellShapedRightInsertions tok (second :: rest))
 
 checkForwardBalanced : Token -> Token -> Int -> List Token -> Bool
 checkForwardBalanced left right depth toks =
@@ -140,7 +132,8 @@ forwardRepair left right depth toks =
           if head /= left || checkForwardBalanced left right newDepth tail then
             [tail]
           else
-            wellShapedInsertions right tail
+            -- wellShapedInsertions right tail
+            [tail]
       in
       List.map
         ((::) head)
@@ -152,9 +145,9 @@ forwardRepair left right depth toks =
 balance : List Token -> List (List Token)
 balance =
   forwardRepair LPAREN RPAREN 0
-    {- >> List.concatMap
-         ( reverseTokens
-             >> forwardRepair LPAREN RPAREN 0
-             >> List.map reverseTokens
-             ) -}
+    >> List.concatMap
+      ( Token.reverseMany
+          >> forwardRepair LPAREN RPAREN 0
+          >> List.map Token.reverseMany
+          )
     >> Utils.deduplicate

@@ -11,7 +11,6 @@ import Token exposing (Token(..))
 import Exp exposing (Exp(..))
 import Translation
 import Repair
-import Vsa
 
 import Model exposing (Model)
 import Update exposing (Msg(..))
@@ -129,7 +128,7 @@ view model =
                   [ text <|
                       case Translation.parse toks of
                         Just e ->
-                          expDebugString e
+                          Exp.debug e
 
                         Nothing ->
                           "Did not parse!"
@@ -143,7 +142,7 @@ view model =
         )
     , h2
         []
-        [ text "Version space algebra" ]
+        [ text "Parse forest" ]
     , div
         []
         [ case maybePossibleTrees of
@@ -151,31 +150,9 @@ view model =
               text "No possible trees!"
 
             Just (head :: tail) ->
-              text <| Vsa.debugString <|
-                List.foldl
-                  (\e -> Vsa.merge (Vsa.fromExp e))
-                  (Vsa.fromExp head)
-                  tail
+              text "All trees parsed!"
 
             Nothing ->
               text "A possible list of tokens failed to parse!"
         ]
     ]
-
-expDebugString : Exp -> String
-expDebugString e =
-  case e of
-    Var x ->
-      x
-
-    Num n ->
-      String.fromInt n
-
-    Plus e1 e2 ->
-      "(+ " ++ expDebugString e1 ++ " " ++ expDebugString e2 ++ ")"
-
-    OperandHole ->
-      "?"
-
-    OperatorHole e1 e2 ->
-      "(?op " ++ expDebugString e1 ++ " " ++ expDebugString e2 ++ ")"
