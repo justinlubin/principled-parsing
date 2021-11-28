@@ -118,3 +118,25 @@ productRange low high =
 choose : Int -> Int -> Int
 choose n k =
   productRange (k + 1) n // productRange 1 (n - k)
+
+unmatchedRights : a -> a -> List a -> Int
+unmatchedRights left right =
+  let
+    helper : Int -> Int -> List a -> Int
+    helper depth count xs =
+      case xs of
+        [] ->
+          count
+
+        head :: tail ->
+          if head == left then
+            helper (depth + 1) count tail
+          else if head == right then
+            if depth > 0 then
+              helper (depth - 1) count tail
+            else
+              helper depth (count + 1) tail
+          else
+            helper depth count tail
+  in
+  helper 0 0

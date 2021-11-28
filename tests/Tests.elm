@@ -132,4 +132,31 @@ utils =
           Utils.insertions k (-1) xs
             |> List.length
             |> Expect.equal (Utils.choose (n + k) k)
+    , describe "unmatchedRights"
+        [ test "1" <| \() ->
+            ")("
+              |> String.toList
+              |> Utils.unmatchedRights '(' ')'
+              |> Expect.equal 1
+        , test "2" <| \() ->
+            ")())()("
+              |> String.toList
+              |> Utils.unmatchedRights '(' ')'
+              |> Expect.equal 2
+        , test "1 again" <| \() ->
+            ")(((()))()("
+              |> String.toList
+              |> Utils.unmatchedRights '(' ')'
+              |> Expect.equal 1
+        , test "4" <| \() ->
+            ")))())"
+              |> String.toList
+              |> Utils.unmatchedRights '(' ')'
+              |> Expect.equal 4
+        , test "3" <| \() ->
+            ")))(())"
+              |> String.toList
+              |> Utils.unmatchedRights '(' ')'
+              |> Expect.equal 3
+        ]
     ]
