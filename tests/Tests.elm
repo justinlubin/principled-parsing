@@ -118,4 +118,18 @@ utils =
                   |> Expect.true "Expected item to be in all outputs"
             ]
         )
+    , fuzz (F.list F.int) "insertions has length n + k choose k" <| \xs ->
+        let
+          n =
+            List.length xs
+
+          k =
+            6
+        in
+        if n > 10 then
+          Expect.pass
+        else
+          Utils.insertions k (-1) xs
+            |> List.length
+            |> Expect.equal (Utils.choose (n + k) k)
     ]

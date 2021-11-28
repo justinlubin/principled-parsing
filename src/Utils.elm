@@ -83,3 +83,38 @@ rightInsertions shouldInsert item xs =
           ++ List.map
                ((::) left)
                (rightInsertions shouldInsert item (right :: rest))
+
+insertions : Int -> a -> List a -> List (List a)
+insertions k item xs =
+  if k <= 0 then
+    [xs]
+  else
+    let
+      insertNow =
+        List.map ((::) item) (insertions (k - 1) item xs)
+
+      insertLater =
+        case xs of
+          [] ->
+            []
+
+          head :: tail ->
+            List.map ((::) head) (insertions k item tail)
+    in
+    insertNow ++ insertLater
+
+productRange : Int -> Int -> Int
+productRange low high =
+  let
+    helper : Int -> Int -> Int
+    helper acc current =
+      if current > high then
+        acc
+      else
+        helper (current * acc) (current + 1)
+  in
+  helper 1 low
+
+choose : Int -> Int -> Int
+choose n k =
+  productRange (k + 1) n // productRange 1 (n - k)
