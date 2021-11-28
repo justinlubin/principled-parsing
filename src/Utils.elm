@@ -54,7 +54,32 @@ subsequence smaller larger =
 
 listIterate : Int -> (a -> List a) -> a -> List a
 listIterate n f x =
-  if n == 0 then
+  if n <= 0 then
     [x]
   else
     List.concatMap (listIterate (n - 1) f) (f x)
+
+rightInsertions : (a -> Maybe a -> Bool) -> a -> List a -> List (List a)
+rightInsertions shouldInsert item xs =
+  case xs of
+    [] ->
+      []
+
+    [head] ->
+      if shouldInsert head Nothing then
+        [[head, item]]
+      else
+        []
+
+    left :: right :: rest ->
+      let
+        extra =
+          if shouldInsert left (Just right) then
+            [left :: item :: right :: rest]
+          else
+            []
+      in
+        extra
+          ++ List.map
+               ((::) left)
+               (rightInsertions shouldInsert item (right :: rest))

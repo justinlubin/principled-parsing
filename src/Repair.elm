@@ -71,36 +71,11 @@ shape =
 --------------------------------------------------------------------------------
 -- Balance repair
 
-wellShapedRightInsertions : Token -> List Token -> List (List Token)
-wellShapedRightInsertions tok toks =
-  case toks of
+parensNeeded : a -> a -> Int -> List a -> Int
+parensNeeded left right depth xs =
+  case xs of
     [] ->
-      [[]]
-
-    [head] ->
-      if Token.fits head tok then
-        [[head, tok]]
-      else
-        [[head]]
-
-    first :: second :: rest ->
-      let
-        extra =
-          if Token.fits first tok && Token.fits tok second && second /= tok then
-            [first :: tok :: second :: rest]
-          else
-            []
-      in
-        extra
-          ++ List.map
-               ((::) first)
-               (wellShapedRightInsertions tok (second :: rest))
-
-checkForwardBalanced : Token -> Token -> Int -> List Token -> Bool
-checkForwardBalanced left right depth toks =
-  case toks of
-    [] ->
-      depth <= 0
+      depth
 
     head :: tail ->
       let
@@ -112,42 +87,34 @@ checkForwardBalanced left right depth toks =
           else
             depth
       in
-      checkForwardBalanced left right newDepth tail
+      parensNeeded left right newDepth tail
 
-forwardRepair : Token -> Token -> Int -> List Token -> List (List Token)
-forwardRepair left right depth toks =
-  case toks of
-    [] ->
-      [[]]
+--  ( ) a ) a ( a ( ) a (
+-------------------------
 
-    head :: tail ->
-      let
-        newDepth =
-          if head == left then
-            depth + 1
-          else
-            depth
+wellShapedRightInsertions : List Token -> List (List Token)
+wellShapedRightInsertions =
+  Utils.rightInsertions
+    ( \left maybeRight ->
+        case maybeRight of
+          Nothing ->
+            Token.fits left RPAREN
 
-        partiallyRepairedTails =
-          if head /= left || checkForwardBalanced left right newDepth tail then
-            [tail]
-          else
-            -- wellShapedInsertions right tail
-            [tail]
-      in
-      List.map
-        ((::) head)
-        ( List.concatMap
-            (forwardRepair left right newDepth)
-            partiallyRepairedTails
-        )
+          Just right ->
+            Token.fits left RPAREN && Token.fits RPAREN right
+    )
+    RPAREN
+
+balanceForward : Int -> List Token -> List (List Token)
+balanceForward depth toks =
+  []
 
 balance : List Token -> List (List Token)
 balance =
-  forwardRepair LPAREN RPAREN 0
+  balanceForward 0
     >> List.concatMap
-      ( Token.reverseMany
-          >> forwardRepair LPAREN RPAREN 0
-          >> List.map Token.reverseMany
-          )
-    >> Utils.deduplicate
+        ( Token.reverseMany
+            >> balanceForward 0
+            >> List.map Token.reverseMany
+        )
+    -- >> Utils.deduplicate

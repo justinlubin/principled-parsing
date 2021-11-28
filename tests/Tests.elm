@@ -34,6 +34,25 @@ principledParsing =
             |> Repair.balance
             |> List.all Check.balance
             |> Expect.true "Expected all balance-repaired tokens to be balanced"
+    , fuzz (F.list MF.token) "balanceRepair extends" <| \toks ->
+        if List.length toks > 10 then
+          Expect.pass
+        else
+          toks
+            |> Repair.shape
+            |> Repair.balance
+            |> List.all (\xs -> List.length xs >= List.length toks)
+            |> Expect.true "Expected balanceRepair to extend list"
+    , fuzz (F.list MF.token) "balanceRepair actually does something" <| \toks ->
+        if List.length toks > 10 || List.length toks == 0 then
+          Expect.pass
+        else
+          toks
+            |> Repair.shape
+            |> Repair.balance
+            |> List.length
+            |> (\n -> n > 1)
+            |> Expect.true "Expected balanceRepair to actually do something"
     ]
 
 utils : Test
@@ -57,4 +76,46 @@ utils =
     , test "listIterate" <| \() ->
         Utils.listIterate 2 (\x -> [x, 2]) 5
           |> Expect.equal [5, 2, 2, 2]
+    , describe "rightInsertions"
+        ( let
+            shouldInsert left maybeRight =
+              case maybeRight of
+                Nothing ->
+                  left < 20
+
+                Just right ->
+                  left < 20 && 20 < right
+
+            shouldInsert2 left maybeRight =
+              case maybeRight of
+                Nothing ->
+                  False
+
+                Just right ->
+                  left < 20 && 20 < right
+          in
+            [ test "empty" <| \() ->
+                Utils.rightInsertions shouldInsert 20 []
+                  |> Expect.equal []
+            , test "with one (non-matching) element" <| \() ->
+                Utils.rightInsertions shouldInsert 20 [23]
+                  |> Expect.equal []
+            , test "with one (matching) element" <| \() ->
+                Utils.rightInsertions shouldInsert 20 [5]
+                  |> Expect.equal [[5, 20]]
+            , test "more 1" <| \() ->
+                Utils.rightInsertions shouldInsert 20 [0, 23, 6, 4, 21]
+                  |> Expect.equal [[0, 20, 23, 6, 4, 21], [0, 23, 6, 4, 20, 21]]
+            , test "more 2" <| \() ->
+                Utils.rightInsertions shouldInsert 20 [0, 23, 6, 4]
+                  |> Expect.equal [[0, 20, 23, 6, 4], [0, 23, 6, 4, 20]]
+            , test "more 3" <| \() ->
+                Utils.rightInsertions shouldInsert2 20 [0, 23, 6, 4]
+                  |> Expect.equal [[0, 20, 23, 6, 4]]
+            , fuzz (F.list F.int) "item is in outputs" <| \xs ->
+                Utils.rightInsertions shouldInsert 20 xs
+                  |> List.all (List.member 20)
+                  |> Expect.true "Expected item to be in all outputs"
+            ]
+        )
     ]

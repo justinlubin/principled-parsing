@@ -111,6 +111,13 @@ view model =
         )
     , h2
         []
+        [ text "Reversed tokens" ]
+    , div
+        [ class "tiles" ]
+        ( List.map viewToken (Token.reverseMany tokens)
+        )
+    , h2
+        []
         [ text "Shape-repaired tokens" ]
     , div
         [ class "tiles" ]
