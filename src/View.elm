@@ -11,6 +11,7 @@ import Token exposing (Token(..))
 import Exp exposing (Exp(..))
 import Translation
 import Repair
+import ParseForest
 
 import Model exposing (Model)
 import Update exposing (Msg(..))
@@ -111,13 +112,6 @@ view model =
         )
     , h2
         []
-        [ text "Reversed tokens" ]
-    , div
-        [ class "tiles" ]
-        ( List.map viewToken (Token.reverseMany tokens)
-        )
-    , h2
-        []
         [ text "Shape-repaired tokens" ]
     , div
         [ class "tiles" ]
@@ -152,14 +146,19 @@ view model =
         [ text "Parse forest" ]
     , div
         []
-        [ case maybePossibleTrees of
-            Just [] ->
-              text "No possible trees!"
-
-            Just (head :: tail) ->
-              text "All trees parsed!"
+        ( case maybePossibleTrees of
+            Just possibleTrees ->
+              let
+                parseForest =
+                  ParseForest.fromList possibleTrees
+              in
+              [ text "All trees parsed! Parse forest:"
+              , br [] []
+              , text (ParseForest.debug parseForest)
+              ]
 
             Nothing ->
-              text "A possible list of tokens failed to parse!"
-        ]
+              [ text "A possible list of tokens failed to parse!"
+              ]
+        )
     ]

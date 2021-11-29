@@ -48,5 +48,3 @@ debug e =
 
     OperatorHole e1 e2 ->
       "(?op " ++ debug e1 ++ " " ++ debug e2 ++ ")"
-
-
