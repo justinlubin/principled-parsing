@@ -81,19 +81,19 @@ binaryTreeFromExp : Exp -> BTD.BinaryTree (String, String)
 binaryTreeFromExp e =
   case e of
     Var s ->
-      BTD.Node ("#AAFFAA", s) BTD.Empty BTD.Empty
+      BTD.Node ("#99FF99", s) BTD.Empty BTD.Empty
 
     Num n ->
-      BTD.Node ("#AAFFAA", String.fromInt n) BTD.Empty BTD.Empty
+      BTD.Node ("#99FF99", String.fromInt n) BTD.Empty BTD.Empty
 
     Plus e1 e2 ->
-      BTD.Node ("#FFFFAA", "+") (binaryTreeFromExp e1) (binaryTreeFromExp e2)
+      BTD.Node ("#99FFFF", "+") (binaryTreeFromExp e1) (binaryTreeFromExp e2)
 
     OperandHole ->
-      BTD.Node ("#FFAAAA", "?") BTD.Empty BTD.Empty
+      BTD.Node ("#FF9999", "?") BTD.Empty BTD.Empty
 
     OperatorHole e1 e2 ->
-      BTD.Node ("#FFAAAA", "?") (binaryTreeFromExp e1) (binaryTreeFromExp e2)
+      BTD.Node ("#99FFFF", "?") (binaryTreeFromExp e1) (binaryTreeFromExp e2)
 
 viewParseForest : ParseForest -> Html Msg
 viewParseForest (P exps) =
@@ -124,9 +124,10 @@ view model =
   in
   div
     []
-    [ h2
+    [ h1
         []
-        [ text "Input" ]
+        [ text "Principled Parsing of Incomplete Programs"
+        ]
     , input
         [ class "main-input"
         , type_ "text"
@@ -149,7 +150,7 @@ view model =
         )
     , h2
         []
-        [ text "Balance-repaired possibilities" ]
+        [ text "Balance-repaired tokens" ]
     , div
         []
         ( List.map

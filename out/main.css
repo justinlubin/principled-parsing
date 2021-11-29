@@ -3,10 +3,30 @@
   --tile-size: 40px;
 }
 
-/* Tiles */
+/* General */
 
-.tiles {
+* {
+  box-sizing: border-box;
 }
+
+body {
+  width: 800px;
+  margin: auto;
+  font-family: sans-serif;
+}
+
+h1, h2 {
+  margin-top: 40px;
+}
+
+/* Input */
+
+.main-input {
+  width: 100%;
+  font-size: 1.5em;
+}
+
+/* Tiles */
 
 .tile {
   display: inline-flex;
@@ -53,15 +73,15 @@
   text-align: center;
 }
 
-.paren { --tile-color: #AAAAFF; }
-.num   { --tile-color: #AAFFAA; }
-.var   { --tile-color: #AAFFAA; }
-.op    { --tile-color: #FFFFAA; }
-.hole  { --tile-color: #FFAAAA; }
+.paren { --tile-color: #9999FF; }
+.num   { --tile-color: #99FF99; }
+.var   { --tile-color: #99FF99; }
+.op    { --tile-color: #99FFFF; }
+.hole  { --tile-color: #FF9999; }
 
 .parse-forest svg {
   display: block;
-  width: 600px;
+  width: 100%;
   border: 1px dashed gray;
   margin-bottom: 20px;
   padding: 20px;
@@ -69,5 +89,6 @@
 
 .parse-forest text {
   fill: black;
+  font-family: monospace;
   font-weight: bold;
 }

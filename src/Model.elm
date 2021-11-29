@@ -10,5 +10,5 @@ type alias Model =
 init : Model
 init =
   { input =
-      "(1) + ("
+      ""
   }
