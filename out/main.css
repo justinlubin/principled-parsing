@@ -10,17 +10,16 @@
 }
 
 html {
-  position: relative;
   height: 100%;
 }
 
 body {
-  height: 100%;
-  width: 800px;
-  margin: auto;
-  font-family: "Lato", sans-serif;
   display: flex;
   flex-direction: column;
+  height: 100%;
+  width: 800px;
+  font-family: "Lato", sans-serif;
+  margin: auto;
 }
 
 body > div {
