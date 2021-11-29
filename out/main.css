@@ -9,10 +9,28 @@
   box-sizing: border-box;
 }
 
+html {
+  position: relative;
+  height: 100%;
+}
+
 body {
+  height: 100%;
   width: 800px;
   margin: auto;
-  font-family: sans-serif;
+  font-family: "Lato", sans-serif;
+  display: flex;
+  flex-direction: column;
+}
+
+body > div {
+  flex: 1 0 auto;
+}
+
+footer {
+  text-align: right;
+  padding-right: 10px;
+  padding-bottom: 20px;
 }
 
 h1, h2 {
@@ -30,9 +48,13 @@ h1, h2 {
 
 .tile {
   display: inline-flex;
-  font-family: monospace;
+  font-family: "Inconsolata", monospace;
   font-size: 1.5em;
   margin: 0 -3px;
+}
+
+.tiles + .tiles {
+  margin-top: 10px;
 }
 
 .tile .left,
@@ -89,6 +111,6 @@ h1, h2 {
 
 .parse-forest text {
   fill: black;
-  font-family: monospace;
+  font-family: "Inconsolata", monospace;
   font-weight: bold;
 }

@@ -156,12 +156,8 @@ view model =
         ( List.map
             ( \toks ->
                 div
-                  []
-                  [ div
-                      [ class "tiles" ]
-                      (List.map viewToken toks)
-                  , br [] []
-                  ]
+                  [ class "tiles" ]
+                  (List.map viewToken toks)
             )
             possibleBalanceRepairedTokens
         )
