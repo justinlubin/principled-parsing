@@ -141,6 +141,10 @@ unmatchedRights left right =
   in
   helper 0 0
 
+unmatchedLefts : a -> a -> List a -> Int
+unmatchedLefts left right =
+  List.reverse >> unmatchedRights right left
+
 span : (a -> Bool) -> List a -> (List a, List a)
 span pred xs =
   case xs of
@@ -169,3 +173,12 @@ groupBy pred xs =
           span (pred head) tail
       in
       (head :: prefix) :: groupBy pred suffix
+
+isJust : Maybe a -> Bool
+isJust mx =
+  case mx of
+    Nothing ->
+      False
+
+    Just _ ->
+      True

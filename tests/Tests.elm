@@ -26,7 +26,7 @@ principledParsing =
           |> Check.shape
           |> Expect.true "Expected the shape-repaired tokens to shape-check"
     , fuzz (F.list MF.token) "balanceRepair repairs" <| \toks ->
-        if List.length toks > 10 then
+        if List.length toks > 5 then
           Expect.pass
         else
           toks
@@ -35,7 +35,7 @@ principledParsing =
             |> List.all Check.balance
             |> Expect.true "Expected all balance-repaired tokens to be balanced"
     , fuzz (F.list MF.token) "balanceRepair extends" <| \toks ->
-        if List.length toks > 10 then
+        if List.length toks > 5 then
           Expect.pass
         else
           toks
@@ -44,14 +44,14 @@ principledParsing =
             |> List.all (\xs -> List.length xs >= List.length toks)
             |> Expect.true "Expected balanceRepair to extend list"
     , fuzz (F.list MF.token) "balanceRepair actually does something" <| \toks ->
-        if List.length toks > 10 || List.length toks == 0 then
+        if List.length toks > 5 || List.length toks == 0 then
           Expect.pass
         else
           toks
             |> Repair.shape
             |> Repair.balance
             |> List.length
-            |> (\n -> n > 1)
+            |> (\n -> n >= 1)
             |> Expect.true "Expected balanceRepair to actually do something"
     ]
 

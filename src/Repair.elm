@@ -6,6 +6,7 @@ module Repair exposing
 import Shape exposing (Side(..))
 import Token exposing (Token(..))
 import Exp exposing (Exp(..))
+import Translation
 
 import Utils
 
@@ -105,16 +106,29 @@ wellShapedRightInsertions =
     )
     RPAREN
 
-balanceForward : Int -> List Token -> List (List Token)
-balanceForward depth toks =
-  []
+rightConvexChunks : List Token -> List (List Token)
+rightConvexChunks =
+  Utils.groupBy
+    ( \_ right ->
+        Tuple.second (Token.shape right) == Right
+    )
+
+balanceForward : List Token -> List (List Token)
+balanceForward toks =
+  toks
+    |> rightConvexChunks
+    |> Utils.insertions
+         (Utils.unmatchedLefts LPAREN RPAREN toks)
+         [RPAREN]
+    |> List.map List.concat
 
 balance : List Token -> List (List Token)
 balance =
-  balanceForward 0
+  balanceForward
     >> List.concatMap
         ( Token.reverseMany
-            >> balanceForward 0
+            >> balanceForward
             >> List.map Token.reverseMany
         )
-    -- >> Utils.deduplicate
+    >> Utils.deduplicate
+    >> List.filter (Translation.parse >> Utils.isJust)
