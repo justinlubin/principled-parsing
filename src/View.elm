@@ -6,12 +6,14 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (..)
 
+import BinaryTreeDiagram as BTD
+
 import Shape exposing (Shape, Side)
 import Token exposing (Token(..))
 import Exp exposing (Exp(..))
 import Translation
 import Repair
-import ParseForest
+import ParseForest exposing (ParseForest(..))
 
 import Model exposing (Model)
 import Update exposing (Msg(..))
@@ -75,6 +77,34 @@ sequenceMaybe xs =
     Nothing :: tail ->
       Nothing
 
+binaryTreeFromExp : Exp -> BTD.BinaryTree (String, String)
+binaryTreeFromExp e =
+  case e of
+    Var s ->
+      BTD.Node ("#AAFFAA", s) BTD.Empty BTD.Empty
+
+    Num n ->
+      BTD.Node ("#AAFFAA", String.fromInt n) BTD.Empty BTD.Empty
+
+    Plus e1 e2 ->
+      BTD.Node ("#FFFFAA", "+") (binaryTreeFromExp e1) (binaryTreeFromExp e2)
+
+    OperandHole ->
+      BTD.Node ("#FFAAAA", "?") BTD.Empty BTD.Empty
+
+    OperatorHole e1 e2 ->
+      BTD.Node ("#FFAAAA", "?") (binaryTreeFromExp e1) (binaryTreeFromExp e2)
+
+viewParseForest : ParseForest -> Html Msg
+viewParseForest (P exps) =
+  div
+    [ class "parse-forest"
+    ]
+    ( List.map
+        (binaryTreeFromExp >> BTD.diagramView Tuple.first Tuple.second)
+        exps
+    )
+
 view : Model -> Html Msg
 view model =
   let
@@ -126,14 +156,7 @@ view model =
             ( \toks ->
                 div
                   []
-                  [ text <|
-                      case Translation.parse toks of
-                        Just e ->
-                          Exp.debug e
-
-                        Nothing ->
-                          "Did not parse!"
-                  , div
+                  [ div
                       [ class "tiles" ]
                       (List.map viewToken toks)
                   , br [] []
@@ -148,13 +171,9 @@ view model =
         []
         ( case maybePossibleTrees of
             Just possibleTrees ->
-              let
-                parseForest =
-                  ParseForest.fromList possibleTrees
-              in
-              [ text "All trees parsed! Parse forest:"
-              , br [] []
-              , text (ParseForest.debug parseForest)
+              [ possibleTrees
+                  |> ParseForest.fromList
+                  |> viewParseForest
               ]
 
             Nothing ->

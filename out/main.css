@@ -58,3 +58,16 @@
 .var   { --tile-color: #AAFFAA; }
 .op    { --tile-color: #FFFFAA; }
 .hole  { --tile-color: #FFAAAA; }
+
+.parse-forest svg {
+  display: block;
+  width: 600px;
+  border: 1px dashed gray;
+  margin-bottom: 20px;
+  padding: 20px;
+}
+
+.parse-forest text {
+  fill: black;
+  font-weight: bold;
+}
