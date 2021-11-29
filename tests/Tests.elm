@@ -159,4 +159,7 @@ utils =
               |> Utils.unmatchedRights '(' ')'
               |> Expect.equal 3
         ]
+        , test "groupBy" <| \() ->
+            Utils.groupBy (==) [1, 1, 2, 3, 4, 4]
+              |> Expect.equal [[1, 1], [2], [3], [4, 4]]
     ]

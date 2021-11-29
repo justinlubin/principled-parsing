@@ -140,3 +140,32 @@ unmatchedRights left right =
             helper depth count tail
   in
   helper 0 0
+
+span : (a -> Bool) -> List a -> (List a, List a)
+span pred xs =
+  case xs of
+    [] ->
+      ([], [])
+
+    head :: tail ->
+      if pred head then
+        let
+          (prefix, suffix) =
+            span pred tail
+        in
+        (head :: prefix, suffix)
+      else
+        ([], xs)
+
+groupBy : (a -> a -> Bool) -> List a -> List (List a)
+groupBy pred xs =
+  case xs of
+    [] ->
+      []
+
+    head :: tail ->
+      let
+        (prefix, suffix) =
+          span (pred head) tail
+      in
+      (head :: prefix) :: groupBy pred suffix
