@@ -1,5 +1,5 @@
 build:
-	elm make src/Main.elm --output=out/main.js
+	elm make src/Main.elm --output=docs/main.js
 
 test:
 	elm-test
